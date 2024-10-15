@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Time Range</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h2>Select the time range for your listening data</h2>
+        <form action="{{ url_for('top_items') }}" method="post">
+            <button type="submit" name="time_range" value="short_term" class="btn">Past 1 Month</button>
+            <button type="submit" name="time_range" value="medium_term" class="btn">Past 6 Months</button>
+            <button type="submit" name="time_range" value="long_term" class="btn">Past 12 Months</button>
+        </form>
+    </div>
+</body>
+</html>
