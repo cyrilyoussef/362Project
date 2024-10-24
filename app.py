@@ -105,7 +105,7 @@ def top_items():
     recommended_tracks = recommendations.json().get('tracks', [])
 
     # Get top 3 genres
-    top_genres = [genre for genre, count in Counter(genres).most_common(3)]
+    top_genres = [genre for genre, count in Counter(genres).most_common(5)]
 
     return render_template('callback.html',
                            artists=top_artists,
