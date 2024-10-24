@@ -8,40 +8,74 @@
 </head>
 <body>
     <div class="container">
-        <h1>Your Top Artists</h1>
-        <ul>
-            {% for artist in artists %}
-            <li>{{ artist['name'] }}</li>
-            {% endfor %}
-        </ul>
-
-        <h1>Your Top Tracks</h1>
-        <ul>
-            {% for track in tracks %}
-            <li>{{ track['name'] }} by {{ track['artists'][0]['name'] }}</li>
-            {% endfor %}
-        </ul>
-
-        <h1>Your Top Genres</h1>
-        <ul>
-            {% for genre in genres %}
-            <li>{{ genre }}</li>
-            {% endfor %}
-        </ul>
-
+        <!-- Top Artists Section -->
+        <h1>Your Top Artists</h1>    
+    </div>
+        <div class="boxed-section">
+            <ul>
+                {% if artists %}
+                    {% for artist in artists %}
+                        <li>{{ artist['name'] }}</li>
+                    {% endfor %}
+                {% else %}
+                    <li>No top artists found.</li>
+                {% endif %}
+            </ul>
+        </div>
+    <div class="container">
+        <!-- Top Tracks Section -->
+        <h1>Your Top Tracks</h1>    
+    </div>
+    <div class="boxed-section">
+        <!-- Tracks List Section -->
+        <div class="tracks-section">
+            <ul>
+                {% if tracks %}
+                    {% for track in tracks %}
+                        <li>{{ track['name'] }} by {{ track['artists'][0]['name'] }}</li>
+                    {% endfor %}
+                {% else %}
+                    <li>No top tracks found.</li>
+                {% endif %}
+            </ul>
+        </div>
+    <div class="container">
+        <!-- Top Genres Section -->
+        <h1>Your Top Genres</h1>    
+    </div>
+        <div class="boxed-section">
+            <ul>
+                {% if genres %}
+                    {% for genre in genres %}
+                        <li>{{ genre }}</li>
+                    {% endfor %}
+                {% else %}
+                    <li>No top genres found.</li>
+                {% endif %}
+            </ul>
+        </div>
+        <!-- Listening Time -->
+        
         <h2>Total Listening Time: {{ listening_time }} minutes</h2>
-
+        <div class="container">
+        <!-- Recommended Tracks Section -->
         <h1>Recommended Tracks</h1>
+        </div>
         <ul>
-            {% for recommendation in recommendations %}
-            <li>{{ recommendation['name'] }} by {{ recommendation['artists'][0]['name'] }}</li>
-            {% endfor %}
+            {% if recommendations %}
+                {% for recommendation in recommendations %}
+                    <li>{{ recommendation['name'] }} by {{ recommendation['artists'][0]['name'] }}</li>
+                {% endfor %}
+            {% else %}
+                <li>No recommendations found.</li>
+            {% endif %}
         </ul>
 
         <!-- Back button to return to time period selection -->
         <a href="{{ url_for('choose_time_range') }}" class="btn back-btn">Back</a>
 
-        <a href="{{ url_for('logout') }}" class="btn logout-btn">Log out</a>
+        <!-- Logout button -->
+        <a href="{{ url_for('logout') }}" class="btn log-out-btn">Log out</a>
     </div>
 </body>
 </html>
