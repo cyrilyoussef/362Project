@@ -7,10 +7,36 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
+    <!-- Spotify logo and copyright at the top -->
+    <div class="header">
+        <p class="copyright">© 2024 Spotify</p>
+    </div>
+
+    <!-- Main container -->
     <div class="container">
-        <img src="{{ url_for('static', filename='spotify_logo.png') }}" alt="Spotify Logo" class="logo">
-        <h1>Welcome to Recapify</h1>
-        <a href="{{ url_for('login') }}" class="btn login-btn">Log in with Spotify</a>
+        <!-- Welcome message and login button if the user is not logged in -->
+        {% if not session['logged_in'] %}
+            <h1>Welcome to Recapify</h1>
+            <a href="{{ url_for('login') }}" class="btn login-btn">Log in with Spotify</a>
+        {% else %}
+            <!-- Time frame selection section if the user is logged in -->
+            <h1>Select Your Time Frame</h1>
+            <div class="timeframe-selection">
+                <form method="POST" action="/timeframe">
+                    <button type="submit" name="timeframe" value="short_term">1 Month</button>
+                    <button type="submit" name="timeframe" value="medium_term">6 Months</button>
+                    <button type="submit" name="timeframe" value="long_term">12 Months</button>
+                </form>
+            </div>
+
+            <!-- Log out button -->
+            <div class="logout-section">
+                <form method="POST" action="/logout">
+                    <button type="submit">Log Out</button>
+                </form>
+            </div>
+        {% endif %}
     </div>
 </body>
 </html>
+
