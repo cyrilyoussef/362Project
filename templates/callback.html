@@ -3,79 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Spotify Data</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Spotify Top Items</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #191414;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #1DB954;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .section {
+            width: 80%;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .section h2 {
+            color: #1DB954;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin-bottom: 20px;
+        }
+        img {
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+        audio {
+            display: block;
+            margin: 10px auto;
+        }
+        form {
+            margin-top: 10px;
+        }
+        select, button {
+            padding: 5px 10px;
+            margin-right: 5px;
+            background-color: #1DB954;
+            color: black;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        select {
+            color: black;
+        }
+        button:hover {
+            background-color: #14833b;
+        }
+        .footer-buttons {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        .footer-buttons a {
+            padding: 10px 20px;
+            background-color: #1DB954;
+            color: black;
+            text-decoration: none;
+            border-radius: 3px;
+            font-size: 16px;
+        }
+        .footer-buttons a:hover {
+            background-color: #14833b;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Top Artists Section -->
-        <h1>Your Top Artists</h1>    
-    </div>
-        <div class="boxed-section">
-            <ul>
-                {% if artists %}
-                    {% for artist in artists %}
-                        <li>{{ artist['name'] }}</li>
-                    {% endfor %}
-                {% else %}
-                    <li>No top artists found.</li>
-                {% endif %}
-            </ul>
-        </div>
-    <div class="container">
-        <!-- Top Tracks Section -->
-        <h1>Your Top Tracks</h1>    
-    </div>
-    <div class="boxed-section">
-        <!-- Tracks List Section -->
-        <div class="tracks-section">
-            <ul>
-                {% if tracks %}
-                    {% for track in tracks %}
-                        <li>{{ track['name'] }} by {{ track['artists'][0]['name'] }}</li>
-                    {% endfor %}
-                {% else %}
-                    <li>No top tracks found.</li>
-                {% endif %}
-            </ul>
-        </div>
-    <div class="container">
-        <!-- Top Genres Section -->
-        <h1>Your Top Genres</h1>    
-    </div>
-        <div class="boxed-section">
-            <ul>
-                {% if genres %}
-                    {% for genre in genres %}
-                        <li>{{ genre }}</li>
-                    {% endfor %}
-                {% else %}
-                    <li>No top genres found.</li>
-                {% endif %}
-            </ul>
-        </div>
-        <!-- Listening Time -->
-        
-        <h2>Total Listening Time: {{ listening_time }} minutes</h2>
-        <div class="container">
-        <!-- Recommended Tracks Section -->
-        <h1>Recommended Tracks</h1>
-        </div>
+    <h1>Your Spotify Data</h1>
+
+    <div class="section">
+        <h2>Top Artists</h2>
         <ul>
-            {% if recommendations %}
-                {% for recommendation in recommendations %}
-                    <li>{{ recommendation['name'] }} by {{ recommendation['artists'][0]['name'] }}</li>
-                {% endfor %}
-            {% else %}
-                <li>No recommendations found.</li>
-            {% endif %}
+            {% for artist in artists %}
+            <li>
+                <strong>{{ artist.name }}</strong>
+                {% if artist.images and artist.images[0].url %}
+                <img src="{{ artist.images[0].url }}" alt="{{ artist.name }}" style="max-width: 100px;">
+                {% endif %}
+            </li>
+            {% endfor %}
         </ul>
+    </div>
 
-        <!-- Back button to return to time period selection -->
-        <a href="{{ url_for('choose_time_range') }}" class="btn back-btn">Back</a>
+    <div class="section">
+        <h2>Top Tracks</h2>
+        <ul>
+            {% for track in tracks %}
+            <li>
+                <strong>{{ track.name }}</strong> by {{ track.artists[0].name }}
+                {% if track.album.images and track.album.images[0].url %}
+                <img src="{{ track.album.images[0].url }}" alt="{{ track.name }}" style="max-width: 100px;">
+                {% endif %}
+                {% if track.preview_url %}
+                <audio controls>
+                    <source src="{{ track.preview_url }}" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+                {% else %}
+                <p>No preview available.</p>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
 
-        <!-- Logout button -->
-        <a href="{{ url_for('logout') }}" class="btn log-out-btn">Log out</a>
+    <div class="section">
+        <h2>Top Genres</h2>
+        <ul>
+            {% for genre in genres %}
+            <li>{{ genre }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Recommended Tracks</h2>
+        <ul>
+            {% for track in recommendations %}
+            <li>
+                <strong>{{ track.name }}</strong> by {{ track.artists[0].name }}
+                {% if track.album.images and track.album.images[0].url %}
+                <img src="{{ track.album.images[0].url }}" alt="{{ track.name }}" style="max-width: 100px;">
+                {% endif %}
+                {% if track.preview_url %}
+                <audio controls>
+                    <source src="{{ track.preview_url }}" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+                {% else %}
+                <p>No preview available.</p>
+                {% endif %}
+                <form action="{{ url_for('add_to_playlist') }}" method="POST">
+                    <input type="hidden" name="track_uri" value="{{ track.uri }}">
+                    <select name="playlist_id">
+                        {% for playlist in playlists %}
+                        <option value="{{ playlist.id }}">{{ playlist.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit">Add to Playlist</button>
+                </form>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="footer-buttons">
+        <a href="{{ url_for('choose_time_range') }}">Back</a>
+        <a href="{{ url_for('logout') }}">Log out</a>
     </div>
 </body>
 </html>

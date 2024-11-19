@@ -139,13 +139,6 @@ h3 {
     margin: 10px 0;
 }
 
-/* Listening Time styling */
-.listening-time {
-    margin-top: 20px;
-    font-size: 22px;
-    color: #1db954; /* Spotify green */
-}
-
 /* Buttons styling */
 .buttons {
     display: flex;
@@ -159,11 +152,20 @@ h3 {
     color: #000000; /* Black text */
     border: 2px solid #000000;
     padding: 15px 20px;
-    margin-top: 20px;
-    font-size: 20px; /* Larger button text */
+    margin-top: 50px; /* Increase margin to push buttons further down */
+    font-size: 30px; /* Larger button text */
     border-radius: 10px;
     cursor: pointer;
+    display: block; /* Makes sure the buttons stay on separate lines */
+    text-align: center;
 }
+
+.logout-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 100px; /* Adjust to control vertical positioning */
+}
+
 
 .log-out-btn:hover, .back-btn:hover {
     background-color: #17a848; /* Lighter green on hover */
