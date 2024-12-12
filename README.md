@@ -4,5 +4,4 @@ Welcome to Recapify, a web application that provides Spotify users with personal
 Run "pip install -r requirements.txt" to install all of the requirements before running the executeable.
 
 
-RecapifyApp is the Linux Executeable
 App.exe is the Windows Executeable
