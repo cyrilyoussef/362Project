@@ -79,7 +79,8 @@ def add_to_playlist():
     track_uri = request.form.get('track_uri')
     playlist_id = request.form.get('playlist_id')
 
-    if request.form.get('add_to_playlist') == 'true' and playlist_id:
+    # Ensure both track_uri and playlist_id are provided
+    if track_uri and playlist_id:
         # Add the track to the selected playlist
         add_url = f"{SPOTIFY_API_URL}/playlists/{playlist_id}/tracks"
         response = requests.post(add_url, headers=headers, json={"uris": [track_uri]})
@@ -88,9 +89,8 @@ def add_to_playlist():
             return "Track added successfully!"
         else:
             return f"Failed to add track: {response.status_code}", response.status_code
-
-    return redirect(url_for('search'))
-
+    else:
+        return "Track URI or Playlist ID missing", 400
 
 @app.route('/top-items', methods=["POST"])
 def top_items():

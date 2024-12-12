@@ -23,14 +23,6 @@ h3 {
     margin-top: 10px;
 }
 
-/* Spotify logo styling */
-.spotify-logo {
-    width: 120px; /* Adjust the size */
-    height: auto; /* Maintain aspect ratio */
-    display: block;
-    margin: 0 auto; /* Center the logo */
-}
-
 .copyright {
     font-size: 14px;
     margin-top: 5px;
@@ -106,8 +98,6 @@ h3 {
     background-color: #17a848; /* Lighter green on hover */
 }
 
-/* --- NEW STYLES BELOW FOR RESULTS PAGE --- */
-
 /* Category boxes */
 .categories {
     display: flex;
@@ -182,4 +172,22 @@ ul {
 ul li {
     font-size: 24px; /* Increase text size for all list items */
     margin: 10px 0; /* Space between items */
+}
+
+
+/* Adjust the width of the select box and button to ensure they're next to each other */
+.playlist-select {
+    width: 200px; /* Control the width of the dropdown */
+}
+
+.add-to-playlist-btn {
+    width: 100px; /* Set a fixed width for the add button */
+}
+
+/* Adjust spacing and styling for form elements */
+form {
+    display: flex;
+    flex-direction: row; /* Align the select and button horizontally */
+    gap: 10px; /* Space between select and button */
+    justify-content: flex-start;
 }
