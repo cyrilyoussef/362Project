@@ -78,6 +78,9 @@
             <button type="submit" name="time_range" value="medium_term">Past 6 Months</button>
             <button type="submit" name="time_range" value="long_term">Past 12 Months</button>
         </form>
+        <form action="{{ url_for('search') }}">
+            <button type="submit">Search Songs, Artists, Albums</button>
+        </form>
     </div>
 
     <div class="logout-container">
@@ -85,3 +88,4 @@
     </div>
 </body>
 </html>
+

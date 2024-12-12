@@ -39,10 +39,6 @@
             margin-top: 10px;
             border-radius: 5px;
         }
-        audio {
-            display: block;
-            margin: 10px auto;
-        }
         form {
             margin-top: 10px;
         }
@@ -102,17 +98,18 @@
         <ul>
             {% for track in tracks %}
             <li>
-                <strong>{{ track.name }}</strong> by {{ track.artists[0].name }}
-                {% if track.album.images and track.album.images[0].url %}
-                <img src="{{ track.album.images[0].url }}" alt="{{ track.name }}" style="max-width: 100px;">
-                {% endif %}
-                {% if track.preview_url %}
-                <audio controls>
-                    <source src="{{ track.preview_url }}" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                </audio>
+                <strong>{{ track.name }}</strong>
+                {% if track.artists %}
+                    by {{ track.artists[0].name }}
                 {% else %}
-                <p>No preview available.</p>
+                    by Unknown Artist
+                {% endif %}
+                {% if track.album %}
+                    {% if track.album.images and track.album.images[0].url %}
+                        <img src="{{ track.album.images[0].url }}" alt="{{ track.name }}" style="max-width: 100px;">
+                    {% endif %}
+                {% else %}
+                    <p>No album information available.</p>
                 {% endif %}
             </li>
             {% endfor %}
@@ -124,37 +121,6 @@
         <ul>
             {% for genre in genres %}
             <li>{{ genre }}</li>
-            {% endfor %}
-        </ul>
-    </div>
-
-    <div class="section">
-        <h2>Recommended Tracks</h2>
-        <ul>
-            {% for track in recommendations %}
-            <li>
-                <strong>{{ track.name }}</strong> by {{ track.artists[0].name }}
-                {% if track.album.images and track.album.images[0].url %}
-                <img src="{{ track.album.images[0].url }}" alt="{{ track.name }}" style="max-width: 100px;">
-                {% endif %}
-                {% if track.preview_url %}
-                <audio controls>
-                    <source src="{{ track.preview_url }}" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                </audio>
-                {% else %}
-                <p>No preview available.</p>
-                {% endif %}
-                <form action="{{ url_for('add_to_playlist') }}" method="POST">
-                    <input type="hidden" name="track_uri" value="{{ track.uri }}">
-                    <select name="playlist_id">
-                        {% for playlist in playlists %}
-                        <option value="{{ playlist.id }}">{{ playlist.name }}</option>
-                        {% endfor %}
-                    </select>
-                    <button type="submit">Add to Playlist</button>
-                </form>
-            </li>
             {% endfor %}
         </ul>
     </div>

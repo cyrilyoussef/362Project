@@ -1,4 +1,4 @@
-from flask import Flask, redirect, request, session, url_for, render_template
+from flask import Flask, redirect, request, session, url_for, render_template, jsonify
 import requests
 import base64
 import os
@@ -79,14 +79,18 @@ def add_to_playlist():
     track_uri = request.form.get('track_uri')
     playlist_id = request.form.get('playlist_id')
 
-    # Add the track to the selected playlist
-    add_url = f"{SPOTIFY_API_URL}/playlists/{playlist_id}/tracks"
-    response = requests.post(add_url, headers=headers, json={"uris": [track_uri]})
+    if request.form.get('add_to_playlist') == 'true' and playlist_id:
+        # Add the track to the selected playlist
+        add_url = f"{SPOTIFY_API_URL}/playlists/{playlist_id}/tracks"
+        response = requests.post(add_url, headers=headers, json={"uris": [track_uri]})
 
-    if response.status_code == 201:
-        return "Track added successfully!"
-    else:
-        return f"Failed to add track: {response.status_code}", response.status_code
+        if response.status_code == 201:
+            return "Track added successfully!"
+        else:
+            return f"Failed to add track: {response.status_code}", response.status_code
+
+    return redirect(url_for('search'))
+
 
 @app.route('/top-items', methods=["POST"])
 def top_items():
@@ -111,14 +115,6 @@ def top_items():
     response_tracks = requests.get(f"{SPOTIFY_API_URL}/me/top/tracks", headers=headers, params=params)
     top_tracks = response_tracks.json().get('items', [])
 
-    # Get Recommendations based on top tracks and artists
-    seed_artists = ','.join([artist['id'] for artist in top_artists[:2]])  # Use 2 top artists
-    seed_tracks = ','.join([track['id'] for track in top_tracks[:2]])  # Use 2 top tracks
-    recommendations = requests.get(f"{SPOTIFY_API_URL}/recommendations",
-                                   headers=headers,
-                                   params={"seed_artists": seed_artists, "seed_tracks": seed_tracks, "limit": 5})
-    recommended_tracks = recommendations.json().get('tracks', [])
-
     # Get user's playlists
     response_playlists = requests.get(f"{SPOTIFY_API_URL}/me/playlists", headers=headers)
     playlists = response_playlists.json().get('items', [])
@@ -130,8 +126,77 @@ def top_items():
                            artists=top_artists,
                            tracks=top_tracks,
                            genres=top_genres,
-                           recommendations=recommended_tracks,
                            playlists=playlists)
+
+@app.route('/get_album_tracks/<album_id>')
+def get_album_tracks(album_id):
+    # Use the access token from the session
+    if 'access_token' not in session:
+        return redirect(url_for('login'))
+
+    access_token = session['access_token']
+    SPOTIFY_BASE_URL = "https://api.spotify.com/v1"
+    
+    # Call Spotify API to get album tracks
+    url = f"{SPOTIFY_BASE_URL}/albums/{album_id}/tracks"
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+    response = requests.get(url, headers=headers)
+
+    if response.status_code == 200:
+        # Return track data as JSON
+        data = response.json()
+        tracks = [
+            {"name": track["name"], "uri": track["uri"]}
+            for track in data.get("items", [])
+        ]
+        return jsonify(tracks)
+    else:
+        # Handle errors
+        return jsonify({"error": "Unable to fetch tracks"}), response.status_code
+@app.route('/search', methods=["POST", "GET"])
+def search():
+    if 'access_token' not in session:
+        return redirect(url_for('login'))
+
+    headers = {"Authorization": f"Bearer {session['access_token']}"}
+    query = request.form.get('query', '')
+    search_type = request.form.get('search_type', 'track')
+
+    # Fetch user playlists
+    response_playlists = requests.get(f"{SPOTIFY_API_URL}/me/playlists", headers=headers)
+    playlists = response_playlists.json().get('items', [])
+
+    items = []
+    if query:
+        # Search Spotify for tracks, albums, or artists
+        search_url = f"{SPOTIFY_API_URL}/search"
+        params = {"q": query, "type": search_type, "limit": 5}
+        response_search = requests.get(search_url, headers=headers, params=params)
+        result = response_search.json()
+
+        # Get the relevant search result
+        if search_type == 'track':
+            items = result.get('tracks', {}).get('items', [])
+        elif search_type == 'album':
+            items = result.get('albums', {}).get('items', [])
+            # Fetch tracks for each album
+            for album in items:
+                album_id = album['id']
+                response_album_tracks = requests.get(f"{SPOTIFY_API_URL}/albums/{album_id}/tracks", headers=headers)
+                album_tracks = response_album_tracks.json().get('items', [])
+                album['tracks'] = album_tracks
+        elif search_type == 'artist':
+            items = result.get('artists', {}).get('items', [])
+            # Fetch top tracks for each artist
+            for artist in items:
+                artist_id = artist['id']
+                response_artist_tracks = requests.get(f"{SPOTIFY_API_URL}/artists/{artist_id}/top-tracks", params={"country": "US"}, headers=headers)
+                artist_tracks = response_artist_tracks.json().get('tracks', [])
+                artist['top_tracks'] = artist_tracks
+
+    return render_template('search.html', query=query, search_type=search_type, items=items, playlists=playlists)
 
 @app.route('/logout')
 def logout():

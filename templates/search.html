@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #191414;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #1DB954;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .section {
+            width: 80%;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .section h2 {
+            color: #1DB954;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .search-box {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        input, select, button {
+            padding: 10px;
+            background-color: #1DB954;
+            color: black;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        input {
+            flex: 1;
+            max-width: 300px;
+        }
+        button:hover {
+            background-color: #14833b;
+        }
+        .result-item {
+            margin-bottom: 20px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+        .track-list {
+            margin-left: 20px;
+        }
+        .footer-buttons {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        .footer-buttons a {
+            padding: 10px 20px;
+            background-color: #1DB954;
+            color: black;
+            text-decoration: none;
+            border-radius: 3px;
+            font-size: 16px;
+        }
+        .footer-buttons a:hover {
+            background-color: #14833b;
+        }
+    </style>
+    <script>
+        function fetchAlbumTracks(albumId, button) {
+            const tracksContainer = document.getElementById(`album-tracks-${albumId}`);
+            
+            // Toggle visibility if tracks are already loaded
+            if (tracksContainer.style.display === "block") {
+                tracksContainer.style.display = "none";
+                button.textContent = "View Tracks";
+                return;
+            }
+
+            // Fetch tracks if not already loaded
+            fetch(`/get_album_tracks/${albumId}`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to fetch tracks');
+                    return response.json();
+                })
+                .then(tracks => {
+                    tracksContainer.innerHTML = tracks.map(track => `
+                        <div style="border-bottom: 1px solid #333; padding: 10px 0;">
+                            <strong>${track.name}</strong>
+                            <form method="POST" action="{{ url_for('add_to_playlist') }}">
+                                <select name="playlist_id" required>
+                                    <option value="">Select Playlist</option>
+                                    {% for playlist in playlists %}
+                                    <option value="{{ playlist.id }}">{{ playlist.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit">Add</button>
+                                <input type="hidden" name="track_uri" value="${track.uri}">
+                            </form>
+                        </div>
+                    `).join('');
+                    tracksContainer.style.display = "block";
+                    button.textContent = "Hide Tracks";
+                })
+                .catch(error => {
+                    console.error(error);
+                    tracksContainer.innerHTML = "<p>Failed to load tracks</p>";
+                    tracksContainer.style.display = "block";
+                });
+        }
+    </script>
+</head>
+<body>
+    <h1>Search Spotify</h1>
+
+    <form method="POST" action="{{ url_for('search') }}">
+        <div class="search-box">
+            <input type="text" name="query" placeholder="Search for Artist, Album or Song" value="{{ query }}" required>
+            <select name="search_type">
+                <option value="track" {% if search_type == 'track' %}selected{% endif %}>Song</option>
+                <option value="album" {% if search_type == 'album' %}selected{% endif %}>Album</option>
+                <option value="artist" {% if search_type == 'artist' %}selected{% endif %}>Artist</option>
+            </select>
+            <button type="submit">Search</button>
+        </div>
+    </form>
+
+    <div class="section">
+        {% if items %}
+            <h2>Results for "{{ query }}"</h2>
+            <div>
+                {% for item in items %}
+                    <div class="result-item">
+                        {% if search_type == 'track' %}
+                            <strong>{{ item.name }}</strong> by {{ item.artists[0].name }}
+                            <form method="POST" action="{{ url_for('add_to_playlist') }}">
+                                <select name="playlist_id" required>
+                                    <option value="">Select Playlist</option>
+                                    {% for playlist in playlists %}
+                                    <option value="{{ playlist.id }}">{{ playlist.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit">Add</button>
+                                <input type="hidden" name="track_uri" value="{{ item.uri }}">
+                            </form>
+                        {% elif search_type == 'album' %}
+                        <div>
+                            <strong>{{ item.name }}</strong> by {{ item.artists[0].name }}
+                            {% if item.images and item.images[0].url %}
+                            <img src="{{ item.images[0].url }}" alt="{{ item.name }}" style="max-width: 150px;">
+                            {% endif %}
+                            <button onclick="fetchAlbumTracks('{{ item.id }}', this)">View Tracks</button>
+                            <div id="album-tracks-{{ item.id }}" style="display: none; margin-left: 20px;"></div>
+                        </div>
+                        {% elif search_type == 'artist' %}
+                            <strong>{{ item.name }}</strong>
+                            <div class="track-list">
+                                {% for track in item.top_tracks %}
+                                    <div>
+                                        <strong>{{ track.name }}</strong> by {{ track.artists[0].name }}
+                                        <form method="POST" action="{{ url_for('add_to_playlist') }}">
+                                            <select name="playlist_id" required>
+                                                <option value="">Select Playlist</option>
+                                                {% for playlist in playlists %}
+                                                <option value="{{ playlist.id }}">{{ playlist.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <button type="submit">Add</button>
+                                            <input type="hidden" name="track_uri" value="{{ track.uri }}">
+                                        </form>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No results found for "{{ query }}"</p>
+        {% endif %}
+    </div>
+
+    <div class="footer-buttons">
+        <a href="{{ url_for('choose_time_range') }}">Back</a>
+        <a href="{{ url_for('logout') }}">Log out</a>
+    </div>
+</body>
+</html>
